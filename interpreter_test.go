@@ -59,6 +59,72 @@ func TestInterpreter(t *testing.T) {
 
 }
 
+type overrideOp struct{}
+
+func (op overrideOp) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
+	interpreter.Outputs["iOverride"] = "something"
+	return true
+}
+
+func TestInterpreterWithOperationOverride(t *testing.T) {
+	js := readTest("test/interpreter_test_2.json")
+	var userid = 123454
+
+	params := make(map[string]interface{})
+	params["userid"] = userid
+	opOverrides := make(map[string]operator)
+	opOverrides["override"] = overrideOp{}
+
+	expt := &Interpreter{
+		Salt:      "foo",
+		Evaluated: false,
+		Inputs:    params,
+		Outputs:   map[string]interface{}{},
+		Code:      js,
+	}
+
+	_, ok := expt.Run()
+	if !ok {
+		t.Errorf("Error running experiment 'test/interpreter_test.json'\n")
+		return
+	}
+
+	x, _ := expt.Get("specific_goal")
+	if compare(x, 1) != 0 {
+		t.Errorf("Variable 'x'. Expected override 1. Actual %v\n", x)
+	}
+
+	y, _ := expt.Get("iOverride")
+	if y != nil {
+		t.Errorf("Variable 'y'. Expected to not exist. Actual %v\n", y)
+	}
+
+	expt = &Interpreter{
+		Salt:              "foo",
+		Evaluated:         false,
+		Inputs:            params,
+		Outputs:           map[string]interface{}{},
+		Code:              js,
+		OperatorOverrides: opOverrides,
+	}
+
+	_, ok = expt.Run()
+	if !ok {
+		t.Errorf("Error running experiment 'test/interpreter_test.json'\n")
+		return
+	}
+
+	x, _ = expt.Get("specific_goal")
+	if compare(x, 1) != 0 {
+		t.Errorf("Variable 'x'. Expected 1. Actual %v\n", x)
+	}
+
+	y, _ = expt.Get("iOverride")
+	if compare(y, "something") != 0 {
+		t.Errorf("Variable 'y'. Expected to not exist. Actual %v\n", y)
+	}
+}
+
 func TestInterpreterWithOverride(t *testing.T) {
 	js := readTest("test/interpreter_test.json")
 
