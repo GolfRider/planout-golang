@@ -23,6 +23,7 @@ import (
 	"math/rand"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 func existOrPanic(m map[string]interface{}, keys []string, opstr string) bool {
@@ -255,5 +256,41 @@ func FisherYatesShuffle(inputs []interface{}, nhash ...uint64) {
 		}
 		j := int(h % uint64(i+1))
 		inputs[i], inputs[j] = inputs[j], inputs[i]
+	}
+}
+
+func delve(obj map[string]interface{}, key string) (interface{}, bool) {
+	props := strings.Split(key, ".")
+	var result interface{}
+	result, ok := obj[props[0]]
+	if ok {
+		if len(props) > 1 {
+			i := 0
+			newProps := append(props[:i], props[i+1:]...)
+			result, _ = delve(result.(map[string]interface{}), strings.Join(newProps, "."))
+		}
+	}
+	return result, result != nil
+}
+
+func delveCreate(obj map[string]interface{}, key string, val interface{}) bool {
+	props := strings.Split(key, ".")
+
+	if len(props) == 0 {
+		return false
+	} else if len(props) == 1 {
+		obj[key] = val
+		return true
+	} else {
+		var result interface{}
+
+		result, ok := obj[props[0]]
+		if !ok {
+			result = make(map[string]interface{})
+			obj[props[0]] = result
+		}
+		i := 0
+		newProps := append(props[:i], props[i+1:]...)
+		return delveCreate(result.(map[string]interface{}), strings.Join(newProps, "."), val)
 	}
 }

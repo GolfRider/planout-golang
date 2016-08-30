@@ -54,17 +54,17 @@ func (interpreter *Interpreter) Run(force ...bool) (map[string]interface{}, bool
 }
 
 func (interpreter *Interpreter) Get(name string) (interface{}, bool) {
-	value, ok := interpreter.Overrides[name]
+	value, ok := delve(interpreter.Overrides, name)
 	if ok {
 		return value, true
 	}
 
-	value, ok = interpreter.Inputs[name]
+	value, ok = delve(interpreter.Inputs, name)
 	if ok {
 		return value, true
 	}
 
-	value, ok = interpreter.Outputs[name]
+	value, ok = delve(interpreter.Outputs, name)
 	if ok {
 		return value, true
 	}
