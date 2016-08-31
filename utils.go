@@ -262,11 +262,11 @@ func FisherYatesShuffle(inputs []interface{}, nhash ...uint64) {
 func delve(obj map[string]interface{}, key string) (interface{}, bool) {
 	props := strings.Split(key, ".")
 	var result interface{}
-	result, ok := obj[props[0]]
-	if ok {
+	var ok bool
+
+	if result, ok = obj[props[0]]; ok {
 		if len(props) > 1 {
-			i := 0
-			newProps := append(props[:i], props[i+1:]...)
+			newProps := append(props[:0], props[1:]...)
 			result, _ = delve(result.(map[string]interface{}), strings.Join(newProps, "."))
 		}
 	}
@@ -283,14 +283,13 @@ func delveCreate(obj map[string]interface{}, key string, val interface{}) bool {
 		return true
 	} else {
 		var result interface{}
+		var ok bool
 
-		result, ok := obj[props[0]]
-		if !ok {
+		if result, ok = obj[props[0]]; !ok {
 			result = make(map[string]interface{})
 			obj[props[0]] = result
 		}
-		i := 0
-		newProps := append(props[:i], props[i+1:]...)
+		newProps := append(props[:0], props[1:]...)
 		return delveCreate(result.(map[string]interface{}), strings.Join(newProps, "."), val)
 	}
 }
