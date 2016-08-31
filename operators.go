@@ -104,7 +104,8 @@ func (s *set) execute(m map[string]interface{}, interpreter *Interpreter) interf
 	lhs := m["var"].(string)
 	interpreter.parameterSalt = lhs
 	value := interpreter.evaluate(m["value"])
-	interpreter.Outputs[lhs] = value
+	//interpreter.Outputs[lhs] = value
+	delveCreate(interpreter.Outputs, lhs, value)
 	return true
 }
 

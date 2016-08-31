@@ -16,9 +16,7 @@
 
 package planout
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type PlanOutCode interface {
 	Run() (map[string]interface{}, bool)
@@ -31,6 +29,7 @@ type Interpreter struct {
 	Code                       interface{}
 	Evaluated, InExperiment    bool
 	parameterSalt              string
+	OperatorOverrides          map[string]operator
 }
 
 func (interpreter *Interpreter) Run(force ...bool) (map[string]interface{}, bool) {
@@ -55,17 +54,17 @@ func (interpreter *Interpreter) Run(force ...bool) (map[string]interface{}, bool
 }
 
 func (interpreter *Interpreter) Get(name string) (interface{}, bool) {
-	value, ok := interpreter.Overrides[name]
+	value, ok := delve(interpreter.Overrides, name)
 	if ok {
 		return value, true
 	}
 
-	value, ok = interpreter.Inputs[name]
+	value, ok = delve(interpreter.Inputs, name)
 	if ok {
 		return value, true
 	}
 
-	value, ok = interpreter.Outputs[name]
+	value, ok = delve(interpreter.Outputs, name)
 	if ok {
 		return value, true
 	}
@@ -89,7 +88,7 @@ func (interpreter *Interpreter) evaluate(code interface{}) interface{} {
 
 	js, ok := code.(map[string]interface{})
 	if ok {
-		opptr, exists := isOperator(js)
+		opptr, exists := interpreter.getOperator(js)
 		if exists {
 			return opptr.execute(js, interpreter)
 		}
@@ -100,7 +99,7 @@ func (interpreter *Interpreter) evaluate(code interface{}) interface{} {
 		if len(arr) == 1 {
 			_, ok := arr[0].(map[string]interface{})
 			if ok {
-				_, ok := isOperator(arr[0])
+				_, ok := interpreter.getOperator(arr[0])
 				if ok {
 					return interpreter.evaluate(arr[0])
 				}
@@ -114,4 +113,23 @@ func (interpreter *Interpreter) evaluate(code interface{}) interface{} {
 	}
 
 	return code
+}
+
+func (interpreter *Interpreter) getOperator(expr interface{}) (operator, bool) {
+	js, ok := expr.(map[string]interface{})
+	if !ok {
+		return nil, false
+	}
+
+	opstr, exists := js["op"]
+	if !exists {
+		return nil, false
+	}
+
+	opfunc, exists := interpreter.OperatorOverrides[opstr.(string)]
+	if !exists {
+		return isOperator(js)
+	}
+
+	return opfunc, true
 }
