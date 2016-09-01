@@ -126,7 +126,7 @@ func (n *SimpleNamespace) allocateExperiment(name string, segments int) {
 	args["salt"] = n.Name
 	args["draws"] = segments
 	s := &sample{}
-	shuffle := s.execute(args, expt).([]interface{})
+	shuffle := s.Execute(args, expt).([]interface{})
 
 	// Allocate sampled_segments to experiment
 	// Remove segment from available_segments
@@ -160,7 +160,7 @@ func (n *SimpleNamespace) getSegment() uint64 {
 	args["max"] = n.NumSegments - 1
 	args["unit"] = n.Inputs[n.PrimaryUnit]
 	s := &randomInteger{}
-	n.selectedExperiment = s.execute(args, expt).(uint64)
+	n.selectedExperiment = s.Execute(args, expt).(uint64)
 	return n.selectedExperiment
 }
 

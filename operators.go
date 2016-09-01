@@ -68,7 +68,7 @@ func init() {
 }
 
 type Operator interface {
-	execute(map[string]interface{}, *Interpreter) interface{}
+	Execute(map[string]interface{}, *Interpreter) interface{}
 }
 
 func isOperator(expr interface{}) (Operator, bool) {
@@ -92,14 +92,14 @@ func isOperator(expr interface{}) (Operator, bool) {
 
 type seq struct{}
 
-func (s *seq) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *seq) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"seq"}, "Seq")
 	return interpreter.Evaluate(m["seq"])
 }
 
 type set struct{}
 
-func (s *set) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *set) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"var", "value"}, "Set")
 	lhs := m["var"].(string)
 	interpreter.ParameterSalt = lhs
@@ -111,7 +111,7 @@ func (s *set) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type get struct{}
 
-func (s *get) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *get) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"var"}, "Get")
 	value, exists := interpreter.Get(m["var"].(string))
 	if !exists {
@@ -123,7 +123,7 @@ func (s *get) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type array struct{}
 
-func (s *array) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *array) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Array")
 	ret := interpreter.Evaluate(m["values"])
 	return ret
@@ -131,7 +131,7 @@ func (s *array) execute(m map[string]interface{}, interpreter *Interpreter) inte
 
 type dict struct{}
 
-func (s *dict) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *dict) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	dictionary := make(map[string]interface{})
 	for k, v := range m {
 		if k != "op" {
@@ -143,7 +143,7 @@ func (s *dict) execute(m map[string]interface{}, interpreter *Interpreter) inter
 
 type index struct{}
 
-func (s *index) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *index) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"base", "index"}, "Index")
 	base := interpreter.Evaluate(m["base"])
 	index := interpreter.Evaluate(m["index"])
@@ -224,7 +224,7 @@ func unwrapValue(value reflect.Value) interface{} {
 
 type length struct{}
 
-func (s *length) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *length) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Length")
 	values := interpreter.Evaluate(m["values"])
 	return len(values.([]interface{}))
@@ -232,7 +232,7 @@ func (s *length) execute(m map[string]interface{}, interpreter *Interpreter) int
 
 type coalesce struct{}
 
-func (s *coalesce) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *coalesce) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Coalesce")
 
 	raw_input_values := interpreter.Evaluate(m["values"]).([]interface{})
@@ -250,7 +250,7 @@ func (s *coalesce) execute(m map[string]interface{}, interpreter *Interpreter) i
 
 type and struct{}
 
-func (s *and) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *and) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "And")
 
 	values := m["values"].([]interface{})
@@ -269,7 +269,7 @@ func (s *and) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type or struct{}
 
-func (s *or) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *or) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Or")
 
 	values := m["values"].([]interface{})
@@ -289,7 +289,7 @@ func (s *or) execute(m map[string]interface{}, interpreter *Interpreter) interfa
 
 type not struct{}
 
-func (s *not) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *not) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"value"}, "Not")
 	value := interpreter.Evaluate(m["value"])
 	return !isTrue(value)
@@ -297,7 +297,7 @@ func (s *not) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type cond struct{}
 
-func (s *cond) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *cond) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"cond"}, "Condition")
 	conditions := m["cond"].([]interface{})
 	for i := range conditions {
@@ -313,7 +313,7 @@ func (s *cond) execute(m map[string]interface{}, interpreter *Interpreter) inter
 
 type lt struct{}
 
-func (s *lt) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *lt) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "LessThan")
 	lhs := interpreter.Evaluate(m["left"])
 	rhs := interpreter.Evaluate(m["right"])
@@ -322,7 +322,7 @@ func (s *lt) execute(m map[string]interface{}, interpreter *Interpreter) interfa
 
 type lte struct{}
 
-func (s *lte) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *lte) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "LessThanEqual")
 	lhs := interpreter.Evaluate(m["left"])
 	rhs := interpreter.Evaluate(m["right"])
@@ -331,7 +331,7 @@ func (s *lte) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type gt struct{}
 
-func (s *gt) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *gt) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "GreaterThan")
 	lhs := interpreter.Evaluate(m["left"])
 	rhs := interpreter.Evaluate(m["right"])
@@ -340,7 +340,7 @@ func (s *gt) execute(m map[string]interface{}, interpreter *Interpreter) interfa
 
 type gte struct{}
 
-func (s *gte) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *gte) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "GreaterThanEqual")
 	lhs := interpreter.Evaluate(m["left"])
 	rhs := interpreter.Evaluate(m["right"])
@@ -349,7 +349,7 @@ func (s *gte) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type eq struct{}
 
-func (s *eq) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *eq) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "Equality")
 	lhs := interpreter.Evaluate(m["left"])
 	rhs := interpreter.Evaluate(m["right"])
@@ -358,7 +358,7 @@ func (s *eq) execute(m map[string]interface{}, interpreter *Interpreter) interfa
 
 type min struct{}
 
-func (s *min) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *min) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Minimum")
 	values := interpreter.Evaluate(m["values"]).([]interface{})
 	if len(values) == 0 {
@@ -375,7 +375,7 @@ func (s *min) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type max struct{}
 
-func (s *max) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *max) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Maximum")
 	values := interpreter.Evaluate(m["values"]).([]interface{})
 	if len(values) == 0 {
@@ -392,7 +392,7 @@ func (s *max) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type sum struct{}
 
-func (s *sum) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *sum) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Addition")
 	values := interpreter.Evaluate(m["values"]).([]interface{})
 	return addSlice(values)
@@ -400,7 +400,7 @@ func (s *sum) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type mul struct{}
 
-func (s *mul) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *mul) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Multiplication")
 	values := interpreter.Evaluate(m["values"]).([]interface{})
 	return multiplySlice(values)
@@ -408,7 +408,7 @@ func (s *mul) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type neg struct{}
 
-func (s *neg) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *neg) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"value"}, "Negative")
 	value := interpreter.Evaluate(m["value"])
 	values := []interface{}{-1.0, value}
@@ -417,7 +417,7 @@ func (s *neg) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type round struct{}
 
-func (s *round) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *round) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Rounding")
 	values := interpreter.Evaluate(m["values"]).([]interface{})
 	ret := make([]interface{}, len(values))
@@ -429,7 +429,7 @@ func (s *round) execute(m map[string]interface{}, interpreter *Interpreter) inte
 
 type mod struct{}
 
-func (s *mod) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *mod) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "Modulo")
 	var ret int64 = 0
 	lhs := interpreter.Evaluate(m["left"]).(float64)
@@ -440,7 +440,7 @@ func (s *mod) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type div struct{}
 
-func (s *div) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *div) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "Division")
 	var ret float64 = 0
 	lhs := interpreter.Evaluate(m["left"]).(float64)
@@ -451,14 +451,14 @@ func (s *div) execute(m map[string]interface{}, interpreter *Interpreter) interf
 
 type literal struct{}
 
-func (s *literal) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *literal) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"value"}, "Literal")
 	return m["value"]
 }
 
 type stopPlanout struct{}
 
-func (s *stopPlanout) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *stopPlanout) Execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"value"}, "Literal")
 	value := interpreter.Evaluate(m["value"])
 	interpreter.InExperiment = isTrue(value)

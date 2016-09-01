@@ -90,7 +90,7 @@ func (interpreter *Interpreter) Evaluate(code interface{}) interface{} {
 	if ok {
 		opptr, exists := interpreter.getOperator(js)
 		if exists {
-			return opptr.execute(js, interpreter)
+			return opptr.Execute(js, interpreter)
 		}
 	}
 

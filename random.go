@@ -106,7 +106,7 @@ func getUniform(args map[string]interface{}, interpreter *Interpreter, min, max 
 
 type uniformChoice struct{}
 
-func (s *uniformChoice) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *uniformChoice) Execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"choices", "unit"}, "UniformChoice")
 	choices := interpreter.Evaluate(args["choices"]).([]interface{})
 	nchoices := uint64(len(choices))
@@ -117,7 +117,7 @@ func (s *uniformChoice) execute(args map[string]interface{}, interpreter *Interp
 
 type bernoulliTrial struct{}
 
-func (s *bernoulliTrial) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *bernoulliTrial) Execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"unit"}, "BernoulliTrial")
 	pvalue := interpreter.Evaluate(args["p"]).(float64)
 	rand_val := getUniform(args, interpreter, 0.0, 1.0)
@@ -129,7 +129,7 @@ func (s *bernoulliTrial) execute(args map[string]interface{}, interpreter *Inter
 
 type bernoulliFilter struct{}
 
-func (s *bernoulliFilter) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *bernoulliFilter) Execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"choices", "unit"}, "BernoulliFilter")
 	pvalue := interpreter.Evaluate(args["p"]).(float64)
 	choices := interpreter.Evaluate(args["choices"]).([]interface{})
@@ -146,7 +146,7 @@ func (s *bernoulliFilter) execute(args map[string]interface{}, interpreter *Inte
 
 type weightedChoice struct{}
 
-func (s *weightedChoice) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *weightedChoice) Execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"choices", "unit", "weights"}, "WeightedChoice")
 	weights := interpreter.Evaluate(args["weights"]).([]interface{})
 	sum, cweights := getCummulativeWeights(weights)
@@ -162,7 +162,7 @@ func (s *weightedChoice) execute(args map[string]interface{}, interpreter *Inter
 
 type randomFloat struct{}
 
-func (s *randomFloat) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *randomFloat) Execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"unit"}, "RandomFloat")
 	min_val, _ := toNumber(getOrElse(args, "min", 0.0))
 	max_val, _ := toNumber(getOrElse(args, "max", 1.0))
@@ -171,7 +171,7 @@ func (s *randomFloat) execute(args map[string]interface{}, interpreter *Interpre
 
 type randomInteger struct{}
 
-func (s *randomInteger) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *randomInteger) Execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"unit"}, "RandomInteger")
 	min_val, _ := toNumber(getOrElse(args, "min", 0.0))
 	max_val, _ := toNumber(getOrElse(args, "max", 0.0))
@@ -181,7 +181,7 @@ func (s *randomInteger) execute(args map[string]interface{}, interpreter *Interp
 
 type sample struct{}
 
-func (s *sample) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
+func (s *sample) Execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"choices"}, "Sample")
 	choices := interpreter.Evaluate(args["choices"]).([]interface{})
 	nhash := getHash(args, interpreter)
