@@ -28,8 +28,8 @@ type Interpreter struct {
 	Inputs, Outputs, Overrides map[string]interface{}
 	Code                       interface{}
 	Evaluated, InExperiment    bool
-	parameterSalt              string
-	OperatorOverrides          map[string]operator
+	ParameterSalt              string
+	OperatorOverrides          map[string]Operator
 }
 
 func (interpreter *Interpreter) Run(force ...bool) (map[string]interface{}, bool) {
@@ -49,7 +49,7 @@ func (interpreter *Interpreter) Run(force ...bool) (map[string]interface{}, bool
 		return interpreter.Outputs, true
 	}()
 
-	interpreter.evaluate(interpreter.Code)
+	interpreter.Evaluate(interpreter.Code)
 	return interpreter.Outputs, true
 }
 
@@ -84,13 +84,13 @@ func (interpreter *Interpreter) hasOverrides(name string) bool {
 	return exists
 }
 
-func (interpreter *Interpreter) evaluate(code interface{}) interface{} {
+func (interpreter *Interpreter) Evaluate(code interface{}) interface{} {
 
 	js, ok := code.(map[string]interface{})
 	if ok {
 		opptr, exists := interpreter.getOperator(js)
 		if exists {
-			return opptr.execute(js, interpreter)
+			return opptr.Execute(js, interpreter)
 		}
 	}
 
@@ -101,13 +101,13 @@ func (interpreter *Interpreter) evaluate(code interface{}) interface{} {
 			if ok {
 				_, ok := interpreter.getOperator(arr[0])
 				if ok {
-					return interpreter.evaluate(arr[0])
+					return interpreter.Evaluate(arr[0])
 				}
 			}
 		}
 		v := make([]interface{}, len(arr))
 		for i := range arr {
-			v[i] = interpreter.evaluate(arr[i])
+			v[i] = interpreter.Evaluate(arr[i])
 		}
 		return v
 	}
@@ -115,7 +115,7 @@ func (interpreter *Interpreter) evaluate(code interface{}) interface{} {
 	return code
 }
 
-func (interpreter *Interpreter) getOperator(expr interface{}) (operator, bool) {
+func (interpreter *Interpreter) getOperator(expr interface{}) (Operator, bool) {
 	js, ok := expr.(map[string]interface{})
 	if !ok {
 		return nil, false

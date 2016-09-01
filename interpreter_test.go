@@ -61,7 +61,7 @@ func TestInterpreter(t *testing.T) {
 
 type overrideOp struct{}
 
-func (op overrideOp) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
+func (op overrideOp) Execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	interpreter.Outputs["iOverride"] = "something"
 	return true
 }
@@ -72,7 +72,7 @@ func TestInterpreterWithOperationOverride(t *testing.T) {
 
 	params := make(map[string]interface{})
 	params["userid"] = userid
-	opOverrides := make(map[string]operator)
+	opOverrides := make(map[string]Operator)
 	opOverrides["override"] = overrideOp{}
 
 	expt := &Interpreter{
