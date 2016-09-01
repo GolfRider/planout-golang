@@ -72,7 +72,7 @@ func TestInterpreterWithOperationOverride(t *testing.T) {
 
 	params := make(map[string]interface{})
 	params["userid"] = userid
-	opOverrides := make(map[string]operator)
+	opOverrides := make(map[string]Operator)
 	opOverrides["override"] = overrideOp{}
 
 	expt := &Interpreter{

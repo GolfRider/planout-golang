@@ -64,7 +64,7 @@ func getUnit(args map[string]interface{}, interpreter *Interpreter) string {
 	var unitstr string
 	rawUnit, exists := args["unit"]
 	if exists {
-		units := interpreter.evaluate(rawUnit)
+		units := interpreter.Evaluate(rawUnit)
 		unitstr = generateUnitStr(units)
 	}
 	return unitstr
@@ -73,7 +73,7 @@ func getUnit(args map[string]interface{}, interpreter *Interpreter) string {
 func getHash(args map[string]interface{}, interpreter *Interpreter, appended_units ...string) uint64 {
 
 	unitstr := getUnit(args, interpreter)
-	salt := getSalt(args, interpreter.Salt, interpreter.parameterSalt)
+	salt := getSalt(args, interpreter.Salt, interpreter.ParameterSalt)
 	name := generateNameToHash(unitstr, salt)
 
 	if len(appended_units) > 0 {
@@ -108,7 +108,7 @@ type uniformChoice struct{}
 
 func (s *uniformChoice) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"choices", "unit"}, "UniformChoice")
-	choices := interpreter.evaluate(args["choices"]).([]interface{})
+	choices := interpreter.Evaluate(args["choices"]).([]interface{})
 	nchoices := uint64(len(choices))
 	idx := getHash(args, interpreter) % nchoices
 	choice := choices[idx]
@@ -119,7 +119,7 @@ type bernoulliTrial struct{}
 
 func (s *bernoulliTrial) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"unit"}, "BernoulliTrial")
-	pvalue := interpreter.evaluate(args["p"]).(float64)
+	pvalue := interpreter.Evaluate(args["p"]).(float64)
 	rand_val := getUniform(args, interpreter, 0.0, 1.0)
 	if rand_val <= pvalue {
 		return 1
@@ -131,8 +131,8 @@ type bernoulliFilter struct{}
 
 func (s *bernoulliFilter) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"choices", "unit"}, "BernoulliFilter")
-	pvalue := interpreter.evaluate(args["p"]).(float64)
-	choices := interpreter.evaluate(args["choices"]).([]interface{})
+	pvalue := interpreter.Evaluate(args["p"]).(float64)
+	choices := interpreter.Evaluate(args["choices"]).([]interface{})
 	ret := make([]interface{}, 0, len(choices))
 	for i := range choices {
 		append_str, _ := toString(choices[i])
@@ -148,10 +148,10 @@ type weightedChoice struct{}
 
 func (s *weightedChoice) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"choices", "unit", "weights"}, "WeightedChoice")
-	weights := interpreter.evaluate(args["weights"]).([]interface{})
+	weights := interpreter.Evaluate(args["weights"]).([]interface{})
 	sum, cweights := getCummulativeWeights(weights)
 	stop_val := getUniform(args, interpreter, 0.0, sum)
-	choices := interpreter.evaluate(args["choices"]).([]interface{})
+	choices := interpreter.Evaluate(args["choices"]).([]interface{})
 	for i := range cweights {
 		if stop_val <= cweights[i] {
 			return choices[i]
@@ -183,14 +183,14 @@ type sample struct{}
 
 func (s *sample) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(args, []string{"choices"}, "Sample")
-	choices := interpreter.evaluate(args["choices"]).([]interface{})
+	choices := interpreter.Evaluate(args["choices"]).([]interface{})
 	nhash := getHash(args, interpreter)
 	FisherYatesShuffle(choices, nhash)
 
 	draws := len(choices)
 	arg_draws, exists := args["draws"]
 	if exists {
-		eval_draws, ok := toNumber(interpreter.evaluate(arg_draws))
+		eval_draws, ok := toNumber(interpreter.Evaluate(arg_draws))
 		if ok {
 			draws = int(eval_draws)
 		}
