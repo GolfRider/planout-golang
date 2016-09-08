@@ -88,7 +88,7 @@ func (interpreter *Interpreter) Evaluate(code interface{}) interface{} {
 
 	js, ok := code.(map[string]interface{})
 	if ok {
-		opptr, exists := interpreter.getOperator(js)
+		opptr, exists := interpreter.GetOperator(js)
 		if exists {
 			return opptr.Execute(js, interpreter)
 		}
@@ -99,7 +99,7 @@ func (interpreter *Interpreter) Evaluate(code interface{}) interface{} {
 		if len(arr) == 1 {
 			_, ok := arr[0].(map[string]interface{})
 			if ok {
-				_, ok := interpreter.getOperator(arr[0])
+				_, ok := interpreter.GetOperator(arr[0])
 				if ok {
 					return interpreter.Evaluate(arr[0])
 				}
@@ -115,7 +115,7 @@ func (interpreter *Interpreter) Evaluate(code interface{}) interface{} {
 	return code
 }
 
-func (interpreter *Interpreter) getOperator(expr interface{}) (Operator, bool) {
+func (interpreter *Interpreter) GetOperator(expr interface{}) (Operator, bool) {
 	js, ok := expr.(map[string]interface{})
 	if !ok {
 		return nil, false
