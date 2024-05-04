@@ -137,6 +137,10 @@ func (n *SimpleNamespace) allocateExperiment(name string, segments int) {
 	}
 }
 
+func (n *SimpleNamespace) GetSegmentID() uint64 {
+	return getSegment()
+}
+
 func (n *SimpleNamespace) getSegment() uint64 {
 
 	if n.selectedExperiment != uint64(n.NumSegments+1) {
